@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package sentinel;
+
+option go_package = "./gen;sentinel";
+
+// Sentinel Service definition
+service SentinelService {
+    // Node(Go) reports an anomaly to the Brain(Python)
+    rpc ReportAnomaly (AnomalyReport) returns (AnomalyResponse);
+    // Brain(Python) sends a command to Node(Go) to execute a fix
+    rpc ExecuteAction (ActionRequest) returns (ActionResponse);
+    // Node(Go) streams logs to Brain(Python) for real-time monitoring
+    rpc StreamLogs (LogRequest) returns (stream LogLine);
+}
+
+// Data Structures (Message) 
+message AnomalyReport {
+    string source_node = 1; // e.g., "server-us-east-01"
+    string error_type = 2; // e.g., "High_CPU" or "DB_Connection_Failure"
+    string raw_log_snippet = 3; // The actual error text
+    int64 timestamp = 4;
+}
+
+message AnomalyResponse {
+    string acknowledgement_id = 1;
+    bool is_being_processed = 2;
+}
+
+message ActionRequest {
+    string action_id = 1;
+    string command = 2; // e.g., "systemctl restart nginx"
+    map<string, string> args = 3;
+}
+
+message ActionResponse {
+    bool success = 1;
+    string output = 2; // The shell output of the fix
+    int32 exit_code = 3;
+}
+
+message LogRequest {
+    string node_id = 1;
+    int32 line_count = 2;
+}
+
+message LogLine {
+    string content = 1;
+}
+
