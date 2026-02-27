@@ -1,0 +1,4 @@
+.env
+sentinel-bin
+__pycache__/
+gen/
