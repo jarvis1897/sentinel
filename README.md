@@ -28,3 +28,9 @@ The system follows a **"Muscle & Brain"** architecture, decoupling low-level sys
 - /go-control-plane: The Muscle. Handles the gRPC server, system telemetry loops, and shell command execution.
 - /python-brain: The Brain. Contains the gRPC client, LangGraph state machine logic, and LLM tool-calling definitions.
 - /proto: The Contract. Shared .proto definitions ensuring schema consistency across both services.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
