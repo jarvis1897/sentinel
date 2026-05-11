@@ -1,4 +1,15 @@
-.PHONY: proto
+.PHONY: proto test test-go test-python test-e2e
+
+test: test-go test-python test-e2e
+
+test-go:
+	cd go-control-plane && go test -v -count=1 ./...
+
+test-python:
+	cd python_brain && python -m pytest test_brain.py test_main.py -v
+
+test-e2e:
+	cd python_brain && python -m pytest test_e2e.py -v
 
 proto:
 	# Generate Go code

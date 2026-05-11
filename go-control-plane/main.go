@@ -43,32 +43,43 @@ type serviceCheck struct {
 
 var httpClient = &http.Client{Timeout: 3 * time.Second}
 
+// monitorInterval controls how often the monitor polls. A var so tests can speed it up.
+var monitorInterval = 5 * time.Second
+
+func makeHTTPCheck(url string) func() bool {
+	return func() bool {
+		resp, err := httpClient.Get(url)
+		if err != nil {
+			return false
+		}
+		resp.Body.Close()
+		return resp.StatusCode == http.StatusOK
+	}
+}
+
+func makeTCPCheck(addr string) func() bool {
+	return func() bool {
+		conn, err := net.DialTimeout("tcp", addr, 2*time.Second)
+		if err != nil {
+			return false
+		}
+		conn.Close()
+		return true
+	}
+}
+
 var services = []serviceCheck{
 	{
 		containerName: "sentinel-nginx",
 		errorType:     "NGINX_DOWN",
 		logSnippet:    "nginx health check failed: GET http://localhost:8080/health returned non-200 or connection refused",
-		check: func() bool {
-			resp, err := httpClient.Get("http://localhost:8080/health")
-			if err != nil {
-				return false
-			}
-			resp.Body.Close()
-			return resp.StatusCode == http.StatusOK
-		},
+		check:         makeHTTPCheck("http://localhost:8080/health"),
 	},
 	{
 		containerName: "sentinel-redis",
 		errorType:     "REDIS_DOWN",
 		logSnippet:    "redis health check failed: TCP connect to localhost:6379 refused",
-		check: func() bool {
-			conn, err := net.DialTimeout("tcp", "localhost:6379", 2*time.Second)
-			if err != nil {
-				return false
-			}
-			conn.Close()
-			return true
-		},
+		check:         makeTCPCheck("localhost:6379"),
 	},
 }
 
@@ -162,7 +173,7 @@ func monitorSystem(anomalyCh chan<- string) {
 				delete(inFlight, svc.containerName)
 			}
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(monitorInterval)
 	}
 }
 
