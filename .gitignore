@@ -1,4 +1,5 @@
 .env
 sentinel-bin
+sentinel-go
 __pycache__/
 gen/

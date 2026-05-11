@@ -17,8 +17,13 @@ def create_tools(grpc_stub):
     @tool
     def execute_system_fix(command: str):
         """
-        Executes a shell command on the remote Go Sentinel node to fix a system error.
-        Example commands: 'systemctl restart nginx', 'rm -rf /tmp/cache/*'
+        Executes a command on the remote Go Sentinel node to fix a down service.
+        Allowed commands (policy-enforced by Go):
+          docker restart sentinel-nginx
+          docker restart sentinel-redis
+          docker start sentinel-nginx
+          docker start sentinel-redis
+        Any other command will be blocked and return an error.
         """
         # --- The actual gRPC call ---
         request = sentinel_pb2.ActionRequest(
